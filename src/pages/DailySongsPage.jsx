@@ -68,14 +68,26 @@ export default function DailySongsPage() {
         }
     })
 
-    const handleCopyWhatsApp = () => {
-        let text = `🎶 *SCALETTA DEI CANTI*\nParrocchia Santa Chiara\n\n`
-        matchedSchedule.forEach((item) => {
-            const songTitle = item.song ? item.song.title : item.songId
-            const notes = item.notes ? ` (${item.notes})` : ''
-            text += `• *${item.moment}*: ${songTitle}${notes}\n`
-        })
-        navigator.clipboard.writeText(text)
+    // Condivisione nativa su mobile o copia link negli appunti su desktop
+    const handleShareSchedule = async () => {
+        const url = window.location.href
+        const shareText = `🎶 *Canti della Celebrazione - Parrocchia Santa Chiara*\nEcco la scaletta aggiornata con testi e spartiti:\n${url}`
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Scaletta Canti - Parrocchia Santa Chiara',
+                    text: '🎶 Canti della Celebrazione - Parrocchia Santa Chiara\nEcco la scaletta con testi e spartiti:',
+                    url: url,
+                })
+                return
+            } catch (err) {
+                if (err.name === 'AbortError') return
+            }
+        }
+
+        // Fallback: copia il testo negli appunti
+        navigator.clipboard.writeText(shareText)
         setCopied(true)
         setTimeout(() => setCopied(false), 2500)
     }
@@ -100,9 +112,10 @@ export default function DailySongsPage() {
                     <button
                         type="button"
                         className="whatsapp-copy-btn"
-                        onClick={handleCopyWhatsApp}
+                        onClick={handleShareSchedule}
+                        title="Condividi il link della scaletta"
                     >
-                        {copied ? '✓ Scaletta Copiata!' : '📋 Copia per WhatsApp'}
+                        {copied ? '✓ Link Copiato!' : '🔗 Condividi Scaletta'}
                     </button>
                 )}
             </header>
