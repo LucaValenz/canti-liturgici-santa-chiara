@@ -179,14 +179,24 @@ export default function SongPage() {
                         </div>
                     </div>
 
-                    <div className="pdf-preview-wrapper">
+                    <a
+                        href={origPreview}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="pdf-preview-link"
+                        title="Clicca per aprire lo spartito a schermo intero"
+                    >
                         <iframe
                             src={origPreview}
                             title={`Spartito Originale ${song.title}`}
-                            className="pdf-frame"
+                            className="pdf-frame static-frame"
+                            tabIndex="-1"
                             loading="lazy"
                         />
-                    </div>
+                        <div className="pdf-click-overlay">
+                            <span className="overlay-badge">🔍 Tocca per ingrandire</span>
+                        </div>
+                    </a>
                 </section>
             )}
 
@@ -204,7 +214,7 @@ export default function SongPage() {
                                 rel="noopener noreferrer"
                                 className="action-btn-primary"
                             >
-                                ⛶ Schermo Intero
+                                ⛶ Apri a Schermo Intero
                             </a>
                             <a
                                 href={modDownload}
@@ -217,14 +227,24 @@ export default function SongPage() {
                         </div>
                     </div>
 
-                    <div className="pdf-preview-wrapper">
+                    <a
+                        href={modPreview}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="pdf-preview-link"
+                        title="Clicca per aprire lo spartito a schermo intero"
+                    >
                         <iframe
                             src={modPreview}
                             title={`Spartito Modificato ${song.title}`}
-                            className="pdf-frame"
+                            className="pdf-frame static-frame"
+                            tabIndex="-1"
                             loading="lazy"
                         />
-                    </div>
+                        <div className="pdf-click-overlay">
+                            <span className="overlay-badge">🔍 Tocca per ingrandire</span>
+                        </div>
+                    </a>
                 </section>
             )}
 
