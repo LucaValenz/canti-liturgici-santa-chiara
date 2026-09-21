@@ -1,10 +1,14 @@
-export default function HomePage({ songs, loading, error }) {
+import { useSongs } from '../context/SongsContext'
+
+export default function HomePage() {
+    const { songs, loading, error } = useSongs()
+
+    if (loading) return <p className="status-message">Caricamento canti...</p>
+    if (error) return <p className="status-message">{error}</p>
+
     return (
-        <section className="page-content">
-            <h2>Catalogo Canti</h2>
-            {loading && <p>Caricamento canti in corso...</p>}
-            {error && <p>{error}</p>}
-            {!loading && !error && <p>Canti pronti: {songs.length}</p>}
+        <section>
+            <h2>Catalogo ({songs.length} canti)</h2>
         </section>
     )
 }
