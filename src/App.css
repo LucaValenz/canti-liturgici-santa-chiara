@@ -529,3 +529,212 @@ header p {
   padding: 3rem 1rem;
   color: var(--text-muted);
 }
+
+/* Dettaglio Canto */
+.song-detail-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+.song-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.song-title-group h1 {
+  font-size: 1.7rem;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.song-subtitle {
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.song-badge-id {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: var(--tag-bg);
+  color: var(--primary);
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  margin-bottom: 0.35rem;
+}
+
+/* Toolbar */
+.song-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #f1f5f9;
+  border-radius: var(--radius);
+}
+
+.font-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.toolbar-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-right: 0.25rem;
+}
+
+.font-controls button,
+.tool-button {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+}
+
+.tool-button.active {
+  background: #fef08a;
+  color: #854d0e;
+  border-color: #fde047;
+}
+
+/* Testo */
+.song-section {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: #1e293b;
+}
+
+.lyrics-wrapper {
+  line-height: 1.6;
+  color: #1e293b;
+  text-align: center;
+}
+
+.lyrics-stanza {
+  margin-bottom: 1.25rem;
+}
+
+.lyrics-stanza.chorus {
+  font-weight: 700;
+  padding-left: 0.85rem;
+  border-left: 4px solid var(--primary);
+  background: #f8fafc;
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+  border-radius: 0 6px 6px 0;
+}
+
+.lyrics-line {
+  margin-bottom: 0.2rem;
+}
+
+/* Spartiti */
+.section-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.sheet-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--primary);
+  color: #fff;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+}
+
+.action-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+}
+
+.pdf-preview-wrapper {
+  width: 100%;
+  height: 380px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.pdf-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Sezione Admin */
+.admin-section {
+  border: 1px dashed #f59e0b;
+  background: #fffbeb;
+}
+
+.admin-title {
+  color: #b45309;
+}
+
+/* Footer risorse */
+.song-footer-resources {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.youtube-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fff;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+
+.notes-box {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: #475569;
+}
