@@ -1,0 +1,52 @@
+Un paio di aggiunte strategiche molto utili per il contesto reale (chiesa / smartphone):
+
+Supporto PWA / Offline parziale (Service Worker o caching di base): Dentro molte chiese la ricezione cellulare è scarsa o assente. Salvare in cache locale l'elenco canti già scaricato evita che l'app rimanga bianca se salta il 4G/5G.
+
+Wake Lock esteso a DailySongsPage: Lo abbiamo messo in SongPage, ma chi segue l'intera celebrazione dalla scaletta rischia che lo schermo del telefono si spenga durante una lettura o un momento di silenzio.
+
+Piano d'Azione Strutturato
+1. Navigazione & Leggibilità (Priorità Alta - UX immediata)
+Componente FontSizeControls:
+
+Estrazione del blocco pulsanti in un componente riutilizzabile.
+
+Sincronizzazione con localStorage e inserimento sia in SongPage che in DailySongsPage.
+
+Navigazione contestuale (location.state):
+
+Passaggio dello stato di provenienza (from: 'daily' o from: 'home').
+
+Aggiornamento dinamico dell'etichetta del pulsante indietro ("← Torna alla Scaletta" vs "← Torna all'elenco").
+
+Wake Lock su DailySongsPage:
+
+Riutilizzo della logica "schermo sempre attivo" anche per la scaletta del giorno.
+
+2. Sicurezza & Ruoli (Accesso Admin)
+Gestione stato Admin:
+
+Modalità di sblocco discreta (es. parametro segreto nell'URL tipo ?admin=true, PIN numerico modale, oppure tocco prolungato/triplo tocco sul logo nella Navbar).
+
+Persistenza del ruolo in sessionStorage o localStorage.
+
+Visualizzazione condizionale dello spartito modificato (note personali) solo ad admin autenticato.
+
+3. Nuove Funzionalità (Coinvolgimento fedeli/coro)
+Pagina SuggestPage (Suggerisci un canto):
+
+Modulo semplice: Titolo, Autore (opzionale), Link YouTube/Web (opzionale), Note liturgiche (es. "adatto per Comunione").
+
+Invio dati: integrazione senza backend (es. Google Form nascosto tramite fetch, Webhook Google Apps Script direttamente sul tuo Sheet, oppure apertura messaggio WhatsApp/Email precompilato).
+
+4. Design System & Accessibilità (CSS & Temi)
+Pulizia e Consolidamento CSS:
+
+Centralizzazione delle variabili colore e spaziatura in :root (token di design).
+
+Rifinitura tipografica uniforme tra desktop e schermi mobile stretti.
+
+Tema Chiaro / Scuro (Dark Mode):
+
+Definizione delle palette :root e [data-theme="dark"] (ottimo per cantare al buio o con poca luce senza abbagliare l'assemblea).
+
+Rilevamento automatico della preferenza di sistema (prefers-color-scheme) con toggle manuale (icona sole/luna) nella Navbar o Sidebar.
