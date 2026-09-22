@@ -1,12 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useLocation } from 'react-router-dom'
 import { useSongs } from '../context/SongsContext'
 import SongLyrics from '../components/SongLyrics'
 import FontSizeControls from '../components/FontSizeControls'
 
 export default function SongPage() {
     const { id } = useParams()
+    const location = useLocation()
     const { songs, loading, error } = useSongs()
+
+    // Determinazione del percorso di provenienza
+    const isFromDaily = location.state?.from === 'daily'
+    const backTo = isFromDaily ? '/daily' : '/'
+    const backLabel = isFromDaily ? '← Torna alla Scaletta' : "← Torna all'elenco"
 
     // Stato admin temporaneamente su true per collaudo
     const [isAdmin] = useState(true)
@@ -83,7 +89,7 @@ export default function SongPage() {
     if (!song) {
         return (
             <section className="song-detail-container">
-                <Link to="/" className="back-link">← Torna all'elenco</Link>
+                <Link to={backTo} className="back-link">{backLabel}</Link>
                 <p className="status-message">Canto non trovato nel catalogo.</p>
             </section>
         )
@@ -98,7 +104,7 @@ export default function SongPage() {
     return (
         <article className="song-detail-container">
             <header className="song-header">
-                <Link to="/" className="back-link">← Torna all'elenco</Link>
+                <Link to={backTo} className="back-link">{backLabel}</Link>
                 <div className="song-title-group">
                     {song.id && <span className="song-badge-id">{song.id}</span>}
                     <h1>{song.title}</h1>
@@ -113,7 +119,7 @@ export default function SongPage() {
                     </div>
                 )}
 
-                {/* Toolbar con FontSizeControls riutilizzabile */}
+                {/* Toolbar */}
                 <div className="song-toolbar">
                     <FontSizeControls fontSize={fontSize} setFontSize={setFontSize} />
 

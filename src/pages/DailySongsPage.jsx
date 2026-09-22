@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import Papa from 'papaparse'
 import { useSongs } from '../context/SongsContext'
@@ -14,11 +14,15 @@ export default function DailySongsPage() {
     const [errorSchedule, setErrorSchedule] = useState(null)
     const [copied, setCopied] = useState(false)
 
-    // Dimensione font memorizzata per la scaletta
+    // Dimensione font sincronizzata con localStorage
     const [fontSize, setFontSize] = useState(() => {
         const saved = localStorage.getItem('hymn_font_size')
         return saved ? Number(saved) : 17
     })
+
+    // Gestione Wake Lock per lo schermo sempre attivo
+    const [wakeLockActive, setWakeLockActive] = useState(false)
+    const wakeLockRef = useRef(null)
 
     const [expandedLyrics, setExpandedLyrics] = useState({})
 
@@ -53,6 +57,38 @@ export default function DailySongsPage() {
                 setLoadingSchedule(false)
             }
         })
+    }, [])
+
+    const toggleWakeLock = async () => {
+        if (!('wakeLock' in navigator)) {
+            alert('La funzione di schermo sempre attivo non è supportata dal tuo browser.')
+            return
+        }
+
+        try {
+            if (wakeLockActive && wakeLockRef.current) {
+                await wakeLockRef.current.release()
+                wakeLockRef.current = null
+                setWakeLockActive(false)
+            } else {
+                wakeLockRef.current = await navigator.wakeLock.request('screen')
+                setWakeLockActive(true)
+                wakeLockRef.current.addEventListener('release', () => {
+                    setWakeLockActive(false)
+                })
+            }
+        } catch (err) {
+            console.warn('Errore Wake Lock:', err)
+            setWakeLockActive(false)
+        }
+    }
+
+    useEffect(() => {
+        return () => {
+            if (wakeLockRef.current) {
+                wakeLockRef.current.release().catch(() => { })
+            }
+        }
     }, [])
 
     const toggleLyrics = (keyId) => {
@@ -112,6 +148,15 @@ export default function DailySongsPage() {
 
                 <div className="daily-header-actions">
                     <FontSizeControls fontSize={fontSize} setFontSize={setFontSize} />
+
+                    <button
+                        type="button"
+                        className={`tool-button ${wakeLockActive ? 'active' : ''}`}
+                        onClick={toggleWakeLock}
+                        title="Mantieni lo schermo acceso durante la celebrazione"
+                    >
+                        {wakeLockActive ? '☀️ Schermo Attivo (ON)' : '🌙 Schermo Normale'}
+                    </button>
 
                     {matchedSchedule.length > 0 && (
                         <button
@@ -180,7 +225,12 @@ export default function DailySongsPage() {
                                                     ▶ YouTube
                                                 </a>
                                             )}
-                                            <Link to={`/song/${item.songId}`} className="details-btn">
+                                            {/* Passaggio di state: { from: 'daily' } */}
+                                            <Link
+                                                to={`/song/${item.songId}`}
+                                                state={{ from: 'daily' }}
+                                                className="details-btn"
+                                            >
                                                 Spartiti ↗
                                             </Link>
                                         </div>
