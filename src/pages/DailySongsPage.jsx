@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Papa from 'papaparse'
 import { useSongs } from '../context/SongsContext'
 import SongLyrics from '../components/SongLyrics'
+import FontSizeControls from '../components/FontSizeControls'
 
 const SCALETTA_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTOuSn2F5KZV-TYnF3yS92H_nEFYCPX_v-VmLtR4nqNXkh6tls7E94FP0ciMGomsPh5H-YBc4lBGFLH/pub?gid=1649967796&single=true&output=csv'
 
@@ -13,8 +14,12 @@ export default function DailySongsPage() {
     const [errorSchedule, setErrorSchedule] = useState(null)
     const [copied, setCopied] = useState(false)
 
-    // Mantiene traccia di quali testi sono aperti (per ID del momento liturgico)
-    // Di default partono tutti aperti per cantare subito
+    // Dimensione font memorizzata per la scaletta
+    const [fontSize, setFontSize] = useState(() => {
+        const saved = localStorage.getItem('hymn_font_size')
+        return saved ? Number(saved) : 17
+    })
+
     const [expandedLyrics, setExpandedLyrics] = useState({})
 
     useEffect(() => {
@@ -34,7 +39,6 @@ export default function DailySongsPage() {
 
                 setSchedule(activeRows)
 
-                // Inizializza tutti i testi come visibili
                 const initialOpen = {}
                 activeRows.forEach((row) => {
                     initialOpen[row.keyId] = true
@@ -68,7 +72,6 @@ export default function DailySongsPage() {
         }
     })
 
-    // Condivisione nativa su mobile o copia link negli appunti su desktop
     const handleShareSchedule = async () => {
         const url = window.location.href
         const shareText = `🎶 *Canti della Celebrazione - Parrocchia Santa Chiara*\nEcco la scaletta aggiornata con testi e spartiti:\n${url}`
@@ -86,7 +89,6 @@ export default function DailySongsPage() {
             }
         }
 
-        // Fallback: copia il testo negli appunti
         navigator.clipboard.writeText(shareText)
         setCopied(true)
         setTimeout(() => setCopied(false), 2500)
@@ -108,16 +110,20 @@ export default function DailySongsPage() {
                     <p className="daily-subtitle">Scaletta musicale completa di testi per la Messa</p>
                 </div>
 
-                {matchedSchedule.length > 0 && (
-                    <button
-                        type="button"
-                        className="whatsapp-copy-btn"
-                        onClick={handleShareSchedule}
-                        title="Condividi il link della scaletta"
-                    >
-                        {copied ? '✓ Link Copiato!' : '🔗 Condividi Scaletta'}
-                    </button>
-                )}
+                <div className="daily-header-actions">
+                    <FontSizeControls fontSize={fontSize} setFontSize={setFontSize} />
+
+                    {matchedSchedule.length > 0 && (
+                        <button
+                            type="button"
+                            className="whatsapp-copy-btn"
+                            onClick={handleShareSchedule}
+                            title="Condividi il link della scaletta"
+                        >
+                            {copied ? '✓ Link Copiato!' : '🔗 Condividi Scaletta'}
+                        </button>
+                    )}
+                </div>
             </header>
 
             {matchedSchedule.length === 0 ? (
@@ -154,7 +160,6 @@ export default function DailySongsPage() {
                                         </div>
                                     )}
 
-                                    {/* CONTROLLI TESTO E SPARTITO */}
                                     <div className="timeline-card-controls">
                                         <button
                                             type="button"
@@ -181,11 +186,10 @@ export default function DailySongsPage() {
                                         </div>
                                     </div>
 
-                                    {/* TESTO INCORPORATO */}
                                     {isOpen && (
                                         <div className="timeline-lyrics-box">
                                             {item.song?.lyrics ? (
-                                                <SongLyrics rawLyrics={item.song.lyrics} fontSize={16} />
+                                                <SongLyrics rawLyrics={item.song.lyrics} fontSize={fontSize} />
                                             ) : (
                                                 <p className="no-lyrics">Testo non ancora inserito per questo canto.</p>
                                             )}

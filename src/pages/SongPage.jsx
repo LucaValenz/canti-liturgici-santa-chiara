@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useSongs } from '../context/SongsContext'
 import SongLyrics from '../components/SongLyrics'
+import FontSizeControls from '../components/FontSizeControls'
 
 export default function SongPage() {
     const { id } = useParams()
@@ -10,7 +11,7 @@ export default function SongPage() {
     // Stato admin temporaneamente su true per collaudo
     const [isAdmin] = useState(true)
 
-    // Dimensione font memorizzata nel browser (default: 18px per comodità)
+    // Dimensione font sincronizzata con localStorage
     const [fontSize, setFontSize] = useState(() => {
         const saved = localStorage.getItem('hymn_font_size')
         return saved ? Number(saved) : 18
@@ -22,14 +23,6 @@ export default function SongPage() {
 
     // Feedback copia link
     const [copied, setCopied] = useState(false)
-
-    const changeFontSize = (delta) => {
-        setFontSize((prev) => {
-            const next = Math.min(Math.max(prev + delta, 14), 28)
-            localStorage.setItem('hymn_font_size', next)
-            return next
-        })
-    }
 
     // Gestione Screen Wake Lock API nativa
     const toggleWakeLock = async () => {
@@ -70,7 +63,6 @@ export default function SongPage() {
         setTimeout(() => setCopied(false), 2000)
     }
 
-    // Funzione helper per convertire link Google Drive in preview o download
     const formatDriveUrl = (url, mode = 'preview') => {
         if (!url) return ''
         const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/)
@@ -121,13 +113,9 @@ export default function SongPage() {
                     </div>
                 )}
 
-                {/* Toolbar per lettura comoda */}
+                {/* Toolbar con FontSizeControls riutilizzabile */}
                 <div className="song-toolbar">
-                    <div className="font-controls">
-                        <span className="toolbar-label">Testo:</span>
-                        <button type="button" onClick={() => changeFontSize(-2)} title="Rimpicciolisci font">A-</button>
-                        <button type="button" onClick={() => changeFontSize(2)} title="Ingrandisci font">A+</button>
-                    </div>
+                    <FontSizeControls fontSize={fontSize} setFontSize={setFontSize} />
 
                     <button
                         type="button"
