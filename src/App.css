@@ -22,7 +22,7 @@ body {
   background-color: var(--bg);
   color: var(--text-main);
   line-height: 1.5;
-  padding: 1rem;
+  padding: 0;
 }
 
 .container {
@@ -249,6 +249,17 @@ header p {
   line-height: 1;
 }
 
+.navbar-titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .navbar-titles h1 {
   font-size: 1.15rem;
   line-height: 1.2;
@@ -257,6 +268,21 @@ header p {
 .navbar-titles span {
   font-size: 0.8rem;
   color: var(--text-muted);
+}
+
+.secret-trigger {
+  user-select: none;
+  cursor: default;
+  display: inline-block;
+}
+
+.admin-active-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  background-color: #0f172a;
+  color: #f8fafc;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
 }
 
 .main-content {
@@ -334,6 +360,32 @@ header p {
 .sidebar-link.active {
   background-color: var(--tag-bg);
   color: var(--primary);
+}
+
+.sidebar-admin-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-status-text {
+  font-size: 0.8rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.admin-logout-btn {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 .back-link {
@@ -609,6 +661,14 @@ header p {
   border-color: #fde047;
 }
 
+.font-size-indicator {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  min-width: 32px;
+  text-align: center;
+}
+
 /* Testo */
 .song-section {
   background: #ffffff;
@@ -636,12 +696,18 @@ header p {
 
 .lyrics-stanza.chorus {
   font-weight: 700;
-  padding-left: 0.85rem;
   border-left: 4px solid var(--primary);
   background: #f8fafc;
-  padding-top: 0.35rem;
-  padding-bottom: 0.35rem;
+  padding: 0.5rem 0.85rem;
   border-radius: 0 6px 6px 0;
+}
+
+.lyrics-stanza.chorus-marker {
+  font-weight: 700;
+  color: var(--primary);
+  opacity: 0.85;
+  letter-spacing: 0.05em;
+  margin: 0.75rem 0;
 }
 
 .lyrics-line {
@@ -688,7 +754,6 @@ header p {
   border-radius: 6px;
 }
 
-/* Contenitore cliccabile e overlay miniatura PDF */
 .pdf-preview-link {
   position: relative;
   display: block;
@@ -701,7 +766,6 @@ header p {
   background-color: #f8fafc;
 }
 
-/* Disabilita l'interazione con l'iframe per impedire lo scroll trappola */
 .static-frame {
   width: 100%;
   height: 100%;
@@ -709,7 +773,6 @@ header p {
   pointer-events: none;
 }
 
-/* Livello trasparente cliccabile sopra il PDF */
 .pdf-click-overlay {
   position: absolute;
   inset: 0;
@@ -800,6 +863,13 @@ header p {
   font-size: 0.9rem;
   color: var(--text-muted);
   margin-top: 0.25rem;
+}
+
+.daily-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .whatsapp-copy-btn {
@@ -900,15 +970,6 @@ header p {
   color: #334155;
 }
 
-.timeline-card-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 0.5rem;
-  border-top: 1px solid #f1f5f9;
-}
-
-/* Controlli card nella scaletta */
 .timeline-card-controls {
   display: flex;
   justify-content: space-between;
@@ -936,28 +997,119 @@ header p {
   gap: 0.5rem;
 }
 
-/* Box per il testo incorporato nella scaletta */
 .timeline-lyrics-box {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
   border-top: 1px dashed var(--border);
   text-align: center;
-  /* Mantiene la centratura scelta per il libretto */
 }
 
-/* Allineamento pulsanti testata DailySongsPage */
-.daily-header-actions {
+/* Modale Admin (Sei Luca?) */
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  justify-content: center;
+  padding: 1.25rem;
+  z-index: 9999;
 }
 
-/* Indicatore numerico della dimensione font */
-.font-size-indicator {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  font-weight: 600;
-  min-width: 32px;
+.admin-modal-card {
+  position: relative;
+  background: #ffffff;
+  width: 100%;
+  max-width: 360px;
+  border-radius: 12px;
+  padding: 1.75rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
   text-align: center;
+}
+
+.admin-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.admin-modal-header h3 {
+  font-size: 1.3rem;
+  color: #0f172a;
+  margin-bottom: 0.35rem;
+}
+
+.admin-modal-header p {
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.admin-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-pin-input {
+  text-align: center;
+  font-size: 1.8rem;
+  letter-spacing: 0.4em;
+  padding: 0.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  background: #f8fafc;
+}
+
+.admin-pin-input:focus {
+  border-color: var(--primary);
+  background: #ffffff;
+}
+
+.admin-error-msg {
+  color: #ef4444;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.admin-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-cancel {
+  flex: 1;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-confirm {
+  flex: 1;
+  background: var(--primary);
+  color: #ffffff;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-confirm:hover {
+  background: var(--primary-hover);
 }
