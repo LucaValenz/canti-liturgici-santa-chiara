@@ -1,17 +1,35 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useAdmin } from '../context/AdminContext'
 
 export default function Navbar() {
-    const [isOpen, setIsOpen] = useState(false)
+    const [menuOpen, setMenuOpen] = useState(false)
     const location = useLocation()
+    const { isAdmin, setShowLoginModal, logout } = useAdmin()
 
-    const closeSidebar = () => setIsOpen(false)
+    // Contatore dei 5 tocchi rapidi su "Parrocchia Santa Chiara" (entro 2.5 secondi)
+    const tapCountRef = useRef(0)
+    const tapTimerRef = useRef(null)
 
-    const navItems = [
-        { label: 'Tutti i Canti', path: '/' },
-        { label: 'Canti del Giorno', path: '/daily' },
-        { label: 'Suggerisci Canto', path: '/suggest' },
-    ]
+    const handleSecretTap = () => {
+        tapCountRef.current += 1
+
+        if (tapTimerRef.current) {
+            clearTimeout(tapTimerRef.current)
+        }
+
+        if (tapCountRef.current >= 5) {
+            tapCountRef.current = 0
+            setShowLoginModal(true)
+            return
+        }
+
+        tapTimerRef.current = setTimeout(() => {
+            tapCountRef.current = 0
+        }, 2500)
+    }
+
+    const closeMenu = () => setMenuOpen(false)
 
     return (
         <>
@@ -19,38 +37,83 @@ export default function Navbar() {
                 <button
                     type="button"
                     className="menu-button"
-                    onClick={() => setIsOpen(!isOpen)}
-                    aria-label="Apri menu di navigazione"
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    aria-label="Apri menu"
                 >
                     ☰
                 </button>
+
                 <div className="navbar-titles">
-                    <h1>Canti Liturgici</h1>
-                    <span>Parrocchia Santa Chiara</span>
+                    <div className="navbar-title-row">
+                        <h1>
+                            <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                Canti Liturgici
+                            </Link>
+                        </h1>
+                        {isAdmin && <span className="admin-active-badge">Admin</span>}
+                    </div>
+                    {/* 5 tocchi rapidi qui aprono il modale "Sei Luca?" */}
+                    <span
+                        className="secret-trigger"
+                        onClick={handleSecretTap}
+                        title=""
+                    >
+                        Parrocchia Santa Chiara
+                    </span>
                 </div>
             </header>
 
-            {/* Sfondo oscurato quando la sidebar è aperta */}
-            {isOpen && <div className="backdrop" onClick={closeSidebar} />}
+            {/* Sfondo semitrasparente sidebar */}
+            {menuOpen && <div className="backdrop" onClick={closeMenu} />}
 
-            {/* Menu laterale a comparsa */}
-            <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+            {/* Sidebar scorrevole */}
+            <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>
                 <div className="sidebar-header">
-                    <h3>Menu</h3>
-                    <button type="button" className="close-button" onClick={closeSidebar}>✕</button>
+                    <h2>Menu</h2>
+                    <button type="button" className="close-button" onClick={closeMenu}>
+                        ✕
+                    </button>
                 </div>
+
                 <nav className="sidebar-nav">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.path}
-                            to={item.path}
-                            onClick={closeSidebar}
-                            className={`sidebar-link ${location.pathname === item.path ? 'active' : ''}`}
-                        >
-                            {item.label}
-                        </Link>
-                    ))}
+                    <Link
+                        to="/"
+                        className={`sidebar-link ${location.pathname === '/' ? 'active' : ''}`}
+                        onClick={closeMenu}
+                    >
+                        📚 Tutti i Canti
+                    </Link>
+                    <Link
+                        to="/daily"
+                        className={`sidebar-link ${location.pathname === '/daily' ? 'active' : ''}`}
+                        onClick={closeMenu}
+                    >
+                        📅 Canti del Giorno
+                    </Link>
+                    <Link
+                        to="/suggest"
+                        className={`sidebar-link ${location.pathname === '/suggest' ? 'active' : ''}`}
+                        onClick={closeMenu}
+                    >
+                        💡 Suggerisci Canto
+                    </Link>
                 </nav>
+
+                {isAdmin && (
+                    <div className="sidebar-admin-footer">
+                        <span className="admin-status-text">Modalità Luca attiva</span>
+                        <button
+                            type="button"
+                            className="admin-logout-btn"
+                            onClick={() => {
+                                logout()
+                                closeMenu()
+                            }}
+                        >
+                            Esci da Admin
+                        </button>
+                    </div>
+                )}
             </aside>
         </>
     )
