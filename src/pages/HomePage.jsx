@@ -2,6 +2,15 @@ import { useState, useMemo } from 'react'
 import { useSongs } from '../context/SongsContext'
 import SongCard from '../components/SongCard'
 
+// Rimuove accenti e converte in minuscolo per ricerca flessibile
+function normalizeText(text) {
+    if (!text) return ''
+    return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+}
+
 export default function HomePage() {
     const { songs, loading, error } = useSongs()
     const [search, setSearch] = useState('')
@@ -18,22 +27,70 @@ export default function HomePage() {
         return ['tutti', ...Array.from(set).sort((a, b) => a.localeCompare(b))]
     }, [songs])
 
-    // Filtra canti per ricerca libera e tag selezionato
+    // Filtra e ordina canti per ricerca multi-parola e tag selezionato
     const filteredSongs = useMemo(() => {
-        const query = search.trim().toLowerCase()
-        return songs.filter((song) => {
-            const matchesSearch =
-                !query ||
-                song.title.toLowerCase().includes(query) ||
-                song.author.toLowerCase().includes(query) ||
-                song.id.toLowerCase().includes(query) ||
-                song.lyrics.toLowerCase().includes(query)
+        const normalizedQuery = normalizeText(search.trim())
+        const tokens = normalizedQuery.split(/\s+/).filter(Boolean)
 
-            const matchesTag =
-                selectedTag === 'tutti' ? true : song.tags.includes(selectedTag)
-
-            return matchesSearch && matchesTag
+        // 1. Filtraggio per tag
+        const tagFiltered = songs.filter((song) => {
+            if (selectedTag === 'tutti') return true
+            return song.tags.some((tag) => normalizeText(tag) === normalizeText(selectedTag))
         })
+
+        // Se non c'è ricerca testuale, ritorna semplicemente i canti filtrati per tag
+        if (tokens.length === 0) {
+            return tagFiltered
+        }
+
+        // 2. Ricerca multi-termine con logica AND e calcolo pertinenza (ranking)
+        const results = []
+
+        tagFiltered.forEach((song) => {
+            const normTitle = normalizeText(song.title)
+            const normAuthor = normalizeText(song.author)
+            const normId = normalizeText(song.id)
+            const normTags = song.tags.map(normalizeText).join(' ')
+            const normLyrics = normalizeText(song.lyrics)
+
+            const fullText = `${normTitle} ${normAuthor} ${normId} ${normTags} ${normLyrics}`
+
+            // Ogni parola cercata deve essere presente in almeno uno dei campi
+            const matchesAllTokens = tokens.every((token) => fullText.includes(token))
+
+            if (matchesAllTokens) {
+                // Calcola il punteggio di pertinenza
+                let score = 0
+
+                // Match perfetto o parziale dell'intera frase nel titolo
+                if (normTitle === normalizedQuery) {
+                    score += 120
+                } else if (normTitle.includes(normalizedQuery)) {
+                    score += 60
+                }
+
+                // Match dei singoli token nei vari campi (più peso a Titolo e Autore)
+                tokens.forEach((token) => {
+                    if (normId === token) score += 40
+                    if (normTitle.includes(token)) score += 25
+                    if (normAuthor.includes(token)) score += 20
+                    if (normTags.includes(token)) score += 10
+                    if (normLyrics.includes(token)) score += 2
+                })
+
+                results.push({ song, score })
+            }
+        })
+
+        // 3. Ordina per pertinenza decrescente, e in caso di parità alfabeticamente per titolo
+        results.sort((a, b) => {
+            if (b.score !== a.score) {
+                return b.score - a.score
+            }
+            return a.song.title.localeCompare(b.song.title, 'it')
+        })
+
+        return results.map((r) => r.song)
     }, [songs, search, selectedTag])
 
     if (loading) {
