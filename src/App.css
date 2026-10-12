@@ -176,6 +176,36 @@ h3 {
   cursor: pointer;
 }
 
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.install-navbar-btn {
+  background: var(--primary);
+  color: #ffffff;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: opacity 0.2s;
+}
+
+[data-theme="dark"] .install-navbar-btn {
+  color: #141210;
+}
+
+.install-navbar-btn:hover {
+  opacity: 0.9;
+}
+
 .theme-toggle-btn {
   background: var(--btn-bg);
   border: 1px solid var(--border);
@@ -184,6 +214,38 @@ h3 {
   border-radius: var(--radius);
   cursor: pointer;
   line-height: 1;
+}
+
+.sidebar-install-row {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.install-sidebar-btn {
+  width: 100%;
+  background: var(--primary);
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius);
+  font-size: 0.92rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: opacity 0.2s;
+}
+
+[data-theme="dark"] .install-sidebar-btn {
+  color: #141210;
+}
+
+.install-sidebar-btn:hover {
+  opacity: 0.9;
 }
 
 /* ==========================================================================

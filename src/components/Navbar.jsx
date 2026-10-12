@@ -1,16 +1,46 @@
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAdmin } from '../context/AdminContext'
 import { useTheme } from '../context/ThemeContext'
 
 export default function Navbar() {
     const [menuOpen, setMenuOpen] = useState(false)
+    const [installPrompt, setInstallPrompt] = useState(null)
     const location = useLocation()
     const { isAdmin, setShowLoginModal, logout } = useAdmin()
     const { theme, toggleTheme } = useTheme()
 
     const tapCountRef = useRef(0)
     const tapTimerRef = useRef(null)
+
+    // Gestione installazione PWA (Chrome, Edge, Android)
+    useEffect(() => {
+        const handleBeforeInstall = (e) => {
+            e.preventDefault()
+            setInstallPrompt(e)
+        }
+
+        const handleAppInstalled = () => {
+            setInstallPrompt(null)
+        }
+
+        window.addEventListener('beforeinstallprompt', handleBeforeInstall)
+        window.addEventListener('appinstalled', handleAppInstalled)
+
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
+            window.removeEventListener('appinstalled', handleAppInstalled)
+        }
+    }, [])
+
+    const handleInstallClick = async () => {
+        if (!installPrompt) return
+        installPrompt.prompt()
+        const choice = await installPrompt.userChoice
+        if (choice.outcome === 'accepted') {
+            setInstallPrompt(null)
+        }
+    }
 
     const handleSecretTap = () => {
         tapCountRef.current += 1
@@ -64,16 +94,30 @@ export default function Navbar() {
                     </div>
                 </div>
 
-                {/* Toggle rapido tema Sole/Luna */}
-                <button
-                    type="button"
-                    className="theme-toggle-btn"
-                    onClick={toggleTheme}
-                    title={theme === 'dark' ? 'Passa al tema Chiaro' : 'Passa al tema Scuro'}
-                    aria-label="Cambia tema chiaro/scuro"
-                >
-                    {theme === 'dark' ? '☀️' : '🌙'}
-                </button>
+                <div className="navbar-right">
+                    {installPrompt && (
+                        <button
+                            type="button"
+                            className="install-navbar-btn"
+                            onClick={handleInstallClick}
+                            title="Installa l'app sul tuo dispositivo"
+                            aria-label="Installa applicazione"
+                        >
+                            📲 Installa
+                        </button>
+                    )}
+
+                    {/* Toggle rapido tema Sole/Luna */}
+                    <button
+                        type="button"
+                        className="theme-toggle-btn"
+                        onClick={toggleTheme}
+                        title={theme === 'dark' ? 'Passa al tema Chiaro' : 'Passa al tema Scuro'}
+                        aria-label="Cambia tema chiaro/scuro"
+                    >
+                        {theme === 'dark' ? '☀️' : '🌙'}
+                    </button>
+                </div>
             </header>
 
             {menuOpen && <div className="backdrop" onClick={closeMenu} />}
@@ -109,6 +153,21 @@ export default function Navbar() {
                         Suggerisci Canto
                     </Link>
                 </nav>
+
+                {installPrompt && (
+                    <div className="sidebar-install-row">
+                        <button
+                            type="button"
+                            className="install-sidebar-btn"
+                            onClick={() => {
+                                handleInstallClick()
+                                closeMenu()
+                            }}
+                        >
+                            📲 Installa l'App
+                        </button>
+                    </div>
+                )}
 
                 <div className="sidebar-theme-row">
                     <span>Aspetto</span>
