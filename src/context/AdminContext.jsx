@@ -2,7 +2,16 @@ import { createContext, useContext, useState, useEffect } from 'react'
 
 const AdminContext = createContext()
 const ADMIN_STORAGE_KEY = 'canti_admin_auth'
-const ADMIN_PIN = '1311'
+
+// SHA-256 del PIN — il valore in chiaro non è più nel sorgente
+const ADMIN_PIN_HASH = '7611f1a57f80b0a87b4178e2e5f16bafa30dd0d9947d99f953c091d8c96abd0e'
+
+async function sha256(text) {
+    const encoded = new TextEncoder().encode(text)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encoded)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+}
 
 export function AdminProvider({ children }) {
     const [isAdmin, setIsAdmin] = useState(false)
@@ -15,8 +24,9 @@ export function AdminProvider({ children }) {
         }
     }, [])
 
-    const loginWithPin = (enteredPin) => {
-        if (enteredPin.trim() === ADMIN_PIN) {
+    const loginWithPin = async (enteredPin) => {
+        const hash = await sha256(enteredPin.trim())
+        if (hash === ADMIN_PIN_HASH) {
             localStorage.setItem(ADMIN_STORAGE_KEY, 'true')
             setIsAdmin(true)
             setShowLoginModal(false)

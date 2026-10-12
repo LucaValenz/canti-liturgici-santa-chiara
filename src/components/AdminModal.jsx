@@ -8,9 +8,9 @@ export default function AdminModal() {
 
     if (!showLoginModal) return null
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        const result = loginWithPin(pin)
+        const result = await loginWithPin(pin)
         if (!result.success) {
             setErrorMessage(result.error)
             setPin('')
