@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useLocation } from 'react-router-dom'
 import { useSongs } from '../context/SongsContext'
+import { useAdmin } from '../context/AdminContext'
 import SongLyrics from '../components/SongLyrics'
 import FontSizeControls from '../components/FontSizeControls'
 
@@ -14,8 +15,7 @@ export default function SongPage() {
     const backTo = isFromDaily ? '/daily' : '/'
     const backLabel = isFromDaily ? '← Torna alla Scaletta' : "← Torna all'elenco"
 
-    // Stato admin temporaneamente su true per collaudo
-    const [isAdmin] = useState(true)
+    const { isAdmin } = useAdmin()
 
     // Dimensione font sincronizzata con localStorage
     const [fontSize, setFontSize] = useState(() => {
