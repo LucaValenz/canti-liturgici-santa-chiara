@@ -143,7 +143,7 @@ export default function Navbar() {
                         className={`sidebar-link ${location.pathname === '/daily' ? 'active' : ''}`}
                         onClick={closeMenu}
                     >
-                        Canti del Giorno
+                        Celebrazioni
                     </Link>
                     <Link
                         to="/suggest"

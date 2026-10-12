@@ -19,7 +19,7 @@ export default defineConfig({
       manifest: {
         name: 'Canti Liturgici — Parrocchia Santa Chiara',
         short_name: 'Canti SC',
-        description: 'Archivio canti liturgici con testi, spartiti e scaletta per le celebrazioni della Parrocchia Santa Chiara.',
+        description: 'Archivio canti liturgici con testi, spartiti e canti per le celebrazioni della Parrocchia Santa Chiara.',
         lang: 'it',
         theme_color: '#f5f0e6',
         background_color: '#f5f0e6',

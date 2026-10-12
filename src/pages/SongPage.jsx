@@ -13,7 +13,7 @@ export default function SongPage() {
     // Determinazione del percorso di provenienza
     const isFromDaily = location.state?.from === 'daily'
     const backTo = isFromDaily ? '/daily' : '/'
-    const backLabel = isFromDaily ? '← Torna alla Scaletta' : "← Torna all'elenco"
+    const backLabel = isFromDaily ? '← Torna alla Celebrazione' : "← Torna all'elenco"
 
     const { isAdmin } = useAdmin()
 

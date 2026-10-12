@@ -5,7 +5,7 @@ import { useSongs } from '../context/SongsContext'
 import SongLyrics from '../components/SongLyrics'
 import FontSizeControls from '../components/FontSizeControls'
 
-const SCALETTA_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTOuSn2F5KZV-TYnF3yS92H_nEFYCPX_v-VmLtR4nqNXkh6tls7E94FP0ciMGomsPh5H-YBc4lBGFLH/pub?gid=1649967796&single=true&output=csv'
+const CELEBRAZIONI_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTOuSn2F5KZV-TYnF3yS92H_nEFYCPX_v-VmLtR4nqNXkh6tls7E94FP0ciMGomsPh5H-YBc4lBGFLH/pub?gid=1649967796&single=true&output=csv'
 
 function getCelebrationIcon(name) {
     const lower = (name || '').toLowerCase()
@@ -38,7 +38,7 @@ export default function DailySongsPage() {
     const [expandedLyrics, setExpandedLyrics] = useState({})
 
     useEffect(() => {
-        Papa.parse(SCALETTA_CSV_URL, {
+        Papa.parse(CELEBRAZIONI_CSV_URL, {
             download: true,
             header: true,
             skipEmptyLines: true,
@@ -161,7 +161,7 @@ export default function DailySongsPage() {
             },
             error: (err) => {
                 console.error(err)
-                setErrorSchedule('Impossibile caricare la scaletta del giorno.')
+                setErrorSchedule('Impossibile caricare i canti della celebrazione.')
                 setLoadingSchedule(false)
             }
         })
@@ -233,17 +233,17 @@ export default function DailySongsPage() {
     const handleShareSchedule = async () => {
         const titleText = activeCelebration
             ? `Canti: ${activeCelebration}`
-            : 'Canti della Celebrazione'
+            : 'Canti per la Celebrazione'
 
         const base = window.location.origin + window.location.pathname
         const shareUrl = `${base}#/daily?celebrazione=${encodeURIComponent(activeCelebration)}`
-        const shareText = `🎶 *${titleText} — Parrocchia Santa Chiara*\nEcco la scaletta con testi e spartiti:\n${shareUrl}`
+        const shareText = `🎶 *${titleText} — Parrocchia Santa Chiara*\nEcco i canti scelti con testi e spartiti:\n${shareUrl}`
 
         if (navigator.share) {
             try {
                 await navigator.share({
                     title: `${titleText} — Parrocchia Santa Chiara`,
-                    text: `🎶 ${titleText} — Parrocchia Santa Chiara\nEcco la scaletta con testi e spartiti:`,
+                    text: `🎶 ${titleText} — Parrocchia Santa Chiara\nEcco i canti scelti con testi e spartiti:`,
                     url: shareUrl,
                 })
                 return
@@ -262,7 +262,7 @@ export default function DailySongsPage() {
     }
 
     if (songsLoading || loadingSchedule) {
-        return <p className="status-message">Caricamento della scaletta...</p>
+        return <p className="status-message">Caricamento dei canti per la celebrazione...</p>
     }
 
     if (errorSchedule) {
@@ -273,8 +273,8 @@ export default function DailySongsPage() {
         <section className="daily-page-container">
             <header className="daily-header">
                 <div>
-                    <h2>{activeCelebration || 'Canti della Celebrazione'}</h2>
-                    <p className="daily-subtitle">Scaletta musicale completa di testi e spartiti</p>
+                    <h2>{activeCelebration || 'Canti per la Celebrazione'}</h2>
+                    <p className="daily-subtitle">Guida musicale e testi per la liturgia</p>
                 </div>
 
                 <div className="daily-header-actions">
@@ -294,9 +294,9 @@ export default function DailySongsPage() {
                             type="button"
                             className="whatsapp-copy-btn"
                             onClick={handleShareSchedule}
-                            title="Condividi il link di questa scaletta"
+                            title="Condividi i canti di questa celebrazione"
                         >
-                            {copied ? '✓ Link Copiato!' : '🔗 Condividi Scaletta'}
+                            {copied ? '✓ Link Copiato!' : '🔗 Condividi Canti'}
                         </button>
                     )}
                 </div>
