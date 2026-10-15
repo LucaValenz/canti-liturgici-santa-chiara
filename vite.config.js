@@ -68,6 +68,7 @@ export default defineConfig({
             handler: 'NetworkFirst',
             options: {
               cacheName: 'sheets-csv-cache',
+              networkTimeoutSeconds: 2.5,
               expiration: {
                 maxEntries: 10,
                 maxAgeSeconds: 60 * 60 * 24 * 7, // 7 giorni di validità offline

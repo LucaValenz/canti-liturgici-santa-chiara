@@ -6,6 +6,7 @@ import SongLyrics from '../components/SongLyrics'
 import FontSizeControls from '../components/FontSizeControls'
 
 const CELEBRAZIONI_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTOuSn2F5KZV-TYnF3yS92H_nEFYCPX_v-VmLtR4nqNXkh6tls7E94FP0ciMGomsPh5H-YBc4lBGFLH/pub?gid=1649967796&single=true&output=csv'
+const CELEBRAZIONI_CACHE_KEY = 'cached_celebrations_schedule_csv'
 
 function getCelebrationIcon(name) {
     const lower = (name || '').toLowerCase()
@@ -13,6 +14,101 @@ function getCelebrationIcon(name) {
     if (lower.includes('fanciull') || lower.includes('bambin') || lower.includes('10:30')) return '👦'
     if (lower.includes('veglia') || lower.includes('notte')) return '✨'
     return '⛪'
+}
+
+function parseCelebrationCsv(csvText) {
+    const results = Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+    })
+
+    if (!results.data || results.data.length === 0) {
+        return { parsedRows: [], uniqueCelebs: [] }
+    }
+
+    const firstRow = results.data[0] || {}
+    const keys = Object.keys(firstRow)
+
+    const celebCol = keys.find((k) => /^(celebrazione|evento|gruppo)/i.test(k.trim()))
+    const momentCol = keys.find((k) => /^momento/i.test(k.trim())) || 'Momento'
+    const songCol = keys.find((k) => /^(canto_id|canto|id)/i.test(k.trim())) || 'Canto_ID'
+    const noteCol = keys.find((k) => /^note/i.test(k.trim())) || 'Note'
+
+    const parsedRows = []
+    let runningCelebration = 'Generale'
+
+    // 1. Formato Verticale principale (colonna Celebrazione presente)
+    if (celebCol) {
+        results.data.forEach((item, index) => {
+            const rawCeleb = (item[celebCol] || '').trim()
+            if (rawCeleb) {
+                runningCelebration = rawCeleb
+            }
+
+            const songId = (item[songCol] || '').trim()
+            const moment = (item[momentCol] || '').trim()
+            const notes = (item[noteCol] || '').trim()
+
+            if (songId) {
+                parsedRows.push({
+                    keyId: `${runningCelebration}-${moment || 'momento'}-${index}`,
+                    celebration: runningCelebration,
+                    moment: moment || 'Momento',
+                    songId,
+                    notes
+                })
+            }
+        })
+    } else {
+        // 2. Fallback per colonne orizzontali precedenti (Messa 10:30, Messa 12:15, Adorazione...)
+        const celebrationColumns = keys.filter((k) =>
+            /^(messa|adorazione|veglia)/i.test(k.trim())
+        )
+
+        if (celebrationColumns.length > 0) {
+            celebrationColumns.forEach((colName) => {
+                const trimmedCol = colName.trim()
+                results.data.forEach((item, index) => {
+                    const songId = (item[colName] || '').trim()
+                    const moment = (item[momentCol] || '').trim()
+                    const notes = (item[noteCol] || '').trim()
+
+                    if (songId) {
+                        parsedRows.push({
+                            keyId: `${trimmedCol}-${moment || 'momento'}-${index}`,
+                            celebration: trimmedCol,
+                            moment: moment || 'Momento',
+                            songId,
+                            notes
+                        })
+                    }
+                })
+            })
+        } else {
+            // 3. Fallback standard
+            results.data.forEach((item, index) => {
+                const songId = (item[songCol] || '').trim()
+                if (songId) {
+                    parsedRows.push({
+                        keyId: `generale-${item[momentCol] || 'momento'}-${index}`,
+                        celebration: 'Celebrazione',
+                        moment: (item[momentCol] || '').trim() || 'Momento',
+                        songId,
+                        notes: (item[noteCol] || '').trim()
+                    })
+                }
+            })
+        }
+    }
+
+    const uniqueCelebs = []
+    parsedRows.forEach((r) => {
+        if (!uniqueCelebs.includes(r.celebration)) {
+            uniqueCelebs.push(r.celebration)
+        }
+    })
+
+    return { parsedRows, uniqueCelebs }
 }
 
 export default function DailySongsPage() {
@@ -38,133 +134,86 @@ export default function DailySongsPage() {
     const [expandedLyrics, setExpandedLyrics] = useState({})
 
     useEffect(() => {
-        Papa.parse(CELEBRAZIONI_CSV_URL, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            complete: (results) => {
-                if (!results.data || results.data.length === 0) {
-                    setAllScheduleRows([])
-                    setCelebrations([])
-                    setLoadingSchedule(false)
-                    return
-                }
+        let isMounted = true
+        let hasLoadedCache = false
 
-                const firstRow = results.data[0] || {}
-                const keys = Object.keys(firstRow)
+        const applyParsedData = (parsedRows, uniqueCelebs) => {
+            setAllScheduleRows(parsedRows)
+            setCelebrations(uniqueCelebs)
 
-                const celebCol = keys.find((k) => /^(celebrazione|evento|gruppo)/i.test(k.trim()))
-                const momentCol = keys.find((k) => /^momento/i.test(k.trim())) || 'Momento'
-                const songCol = keys.find((k) => /^(canto_id|canto|id)/i.test(k.trim())) || 'Canto_ID'
-                const noteCol = keys.find((k) => /^note/i.test(k.trim())) || 'Note'
+            const urlParam = searchParams.get('celebrazione') || searchParams.get('messa')
+            const savedCeleb = localStorage.getItem('active_celebration')
 
-                const parsedRows = []
-                let runningCelebration = 'Generale'
-
-                // 1. Formato Verticale principale (colonna Celebrazione presente)
-                if (celebCol) {
-                    results.data.forEach((item, index) => {
-                        const rawCeleb = (item[celebCol] || '').trim()
-                        if (rawCeleb) {
-                            runningCelebration = rawCeleb
-                        }
-
-                        const songId = (item[songCol] || '').trim()
-                        const moment = (item[momentCol] || '').trim()
-                        const notes = (item[noteCol] || '').trim()
-
-                        if (songId) {
-                            parsedRows.push({
-                                keyId: `${runningCelebration}-${moment || 'momento'}-${index}`,
-                                celebration: runningCelebration,
-                                moment: moment || 'Momento',
-                                songId,
-                                notes
-                            })
-                        }
-                    })
-                } else {
-                    // 2. Fallback per colonne orizzontali precedenti (Messa 10:30, Messa 12:15, Adorazione...)
-                    const celebrationColumns = keys.filter((k) =>
-                        /^(messa|adorazione|veglia)/i.test(k.trim())
-                    )
-
-                    if (celebrationColumns.length > 0) {
-                        celebrationColumns.forEach((colName) => {
-                            const trimmedCol = colName.trim()
-                            results.data.forEach((item, index) => {
-                                const songId = (item[colName] || '').trim()
-                                const moment = (item[momentCol] || '').trim()
-                                const notes = (item[noteCol] || '').trim()
-
-                                if (songId) {
-                                    parsedRows.push({
-                                        keyId: `${trimmedCol}-${moment || 'momento'}-${index}`,
-                                        celebration: trimmedCol,
-                                        moment: moment || 'Momento',
-                                        songId,
-                                        notes
-                                    })
-                                }
-                            })
-                        })
-                    } else {
-                        // 3. Fallback standard
-                        results.data.forEach((item, index) => {
-                            const songId = (item[songCol] || '').trim()
-                            if (songId) {
-                                parsedRows.push({
-                                    keyId: `generale-${item[momentCol] || 'momento'}-${index}`,
-                                    celebration: 'Celebrazione',
-                                    moment: (item[momentCol] || '').trim() || 'Momento',
-                                    songId,
-                                    notes: (item[noteCol] || '').trim()
-                                })
-                            }
-                        })
-                    }
-                }
-
-                setAllScheduleRows(parsedRows)
-
-                // Estrai elenco celebrazioni preservando l'ordine
-                const uniqueCelebs = []
-                parsedRows.forEach((r) => {
-                    if (!uniqueCelebs.includes(r.celebration)) {
-                        uniqueCelebs.push(r.celebration)
-                    }
-                })
-
-                setCelebrations(uniqueCelebs)
-
-                // Selezione iniziale: parametro URL > localStorage > prima celebrazione
-                const urlParam = searchParams.get('celebrazione') || searchParams.get('messa')
-                const savedCeleb = localStorage.getItem('active_celebration')
-
-                let initial = uniqueCelebs[0] || ''
+            setActiveCelebration((prev) => {
                 if (urlParam && uniqueCelebs.some((c) => c.toLowerCase() === urlParam.toLowerCase())) {
-                    initial = uniqueCelebs.find((c) => c.toLowerCase() === urlParam.toLowerCase())
-                } else if (savedCeleb && uniqueCelebs.includes(savedCeleb)) {
-                    initial = savedCeleb
+                    return uniqueCelebs.find((c) => c.toLowerCase() === urlParam.toLowerCase())
                 }
+                if (prev && uniqueCelebs.includes(prev)) {
+                    return prev
+                }
+                if (savedCeleb && uniqueCelebs.includes(savedCeleb)) {
+                    return savedCeleb
+                }
+                return uniqueCelebs[0] || ''
+            })
 
-                setActiveCelebration(initial)
-
-                // Apri tutti i testi di default
-                const initialOpen = {}
+            setExpandedLyrics((prevOpen) => {
+                const newOpen = { ...prevOpen }
                 parsedRows.forEach((row) => {
-                    initialOpen[row.keyId] = true
+                    if (newOpen[row.keyId] === undefined) {
+                        newOpen[row.keyId] = true
+                    }
                 })
-                setExpandedLyrics(initialOpen)
+                return newOpen
+            })
 
-                setLoadingSchedule(false)
-            },
-            error: (err) => {
-                console.error(err)
-                setErrorSchedule('Impossibile caricare i canti della celebrazione.')
-                setLoadingSchedule(false)
+            setLoadingSchedule(false)
+        }
+
+        // 1. Tenta subito il caricamento istantaneo dalla memoria locale
+        const cachedCsv = localStorage.getItem(CELEBRAZIONI_CACHE_KEY)
+        if (cachedCsv) {
+            try {
+                const { parsedRows, uniqueCelebs } = parseCelebrationCsv(cachedCsv)
+                if (parsedRows.length > 0) {
+                    applyParsedData(parsedRows, uniqueCelebs)
+                    hasLoadedCache = true
+                }
+            } catch (err) {
+                console.warn('Errore lettura cache celebrazioni:', err)
             }
-        })
+        }
+
+        // 2. Scarica la versione più recente in background
+        fetch(CELEBRAZIONI_CSV_URL)
+            .then((res) => {
+                if (!res.ok) throw new Error('Risposta di rete non valida')
+                return res.text()
+            })
+            .then((freshCsv) => {
+                if (!isMounted) return
+                if (freshCsv && freshCsv !== cachedCsv) {
+                    localStorage.setItem(CELEBRAZIONI_CACHE_KEY, freshCsv)
+                    const { parsedRows, uniqueCelebs } = parseCelebrationCsv(freshCsv)
+                    if (parsedRows.length > 0) {
+                        applyParsedData(parsedRows, uniqueCelebs)
+                    }
+                }
+                setLoadingSchedule(false)
+                setErrorSchedule(null)
+            })
+            .catch((err) => {
+                if (!isMounted) return
+                if (!hasLoadedCache) {
+                    console.error(err)
+                    setErrorSchedule('Impossibile caricare i canti della celebrazione.')
+                }
+                setLoadingSchedule(false)
+            })
+
+        return () => {
+            isMounted = false
+        }
     }, [searchParams])
 
     const toggleWakeLock = async () => {
